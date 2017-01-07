@@ -1,4 +1,5 @@
-Original Script for VPS Debian 7
+#AutoInstall Script for VPS Debian
+[Atualização e tradução em andamento]
 ===========================
 Service  
 -------  
@@ -36,12 +37,14 @@ Fitur lain
 Webmin   : https://IPVPS:10000/  
 Vnstat   : http://IPVPS:81/vnstat/  
 MRTG     : http://IPVPS:81/mrtg/  
-Timezone : Asia/Jakarta  
+Timezone : America/Sao_Paulo
 Fail2Ban : [on]  
 IPv6     : [off]  
 VPS Akan Reboot Tiap 6 Jam Sekali  
 
 ===========================
 
-                                              Modified by Yurissh Opensource
-                                Thanks to Original Creator Kang Arie Wijayanto and Mikodemos
+Baseado nos projetos de:
+@siver      (Matt Martz)          https://github.com/sivel/speedtest-cli
+@yurisshOS  (Muhammad Yuris Azmi) https://github.com/yurisshOS/debian7os
+@evandro5                         https://github.com/evandro5/utnubu
