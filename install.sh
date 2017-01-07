@@ -5,6 +5,8 @@ export DEBIAN_FRONTEND=noninteractive
 OS=`uname -m`;
 MYIP=`ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0'`;
 MYIP2="s/xxxxxxxxx/$MYIP/g";
+GITHUB="https://raw.github.com/llbranco/debian7os/master/"
+USER="llbranco"
 
 # go to root
 cd
@@ -16,15 +18,15 @@ sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.local
 # install wget and curl
 apt-get update;apt-get -y install wget curl;
 
-# set time GMT +7
-ln -fs /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+# set time GMT -3
+ln -fs  /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 
 # set locale
 sed -i 's/AcceptEnv/#AcceptEnv/g' /etc/ssh/sshd_config
 service ssh restart
 
 # set repo
-wget -O /etc/apt/sources.list "https://raw.github.com/yurisshOS/debian7os/master/sources.list.debian7"
+wget -O /etc/apt/sources.list "$GITHUB/sources.list.debian7""
 wget "http://www.dotdeb.org/dotdeb.gpg"
 wget "http://www.webmin.com/jcameron-key.asc"
 cat dotdeb.gpg | apt-key add -;rm dotdeb.gpg
@@ -60,7 +62,7 @@ service vnstat restart
 
 # install screenfetch
 cd
-wget 'https://raw.github.com/yurisshOS/debian7os/master/screeftech-dev'
+wget '$GITHUB/screeftech-dev'
 mv screeftech-dev /usr/bin/screenfetch
 chmod +x /usr/bin/screenfetch
 echo "clear" >> .profile
@@ -70,24 +72,24 @@ echo "screenfetch" >> .profile
 cd
 rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
-wget -O /etc/nginx/nginx.conf "https://raw.github.com/yurisshOS/debian7os/master/nginx.conf"
+wget -O /etc/nginx/nginx.conf "$GITHUB/nginx.conf"
 mkdir -p /home/vps/public_html
 echo "<pre>Modified by Yurissh OpenSource</pre>" > /home/vps/public_html/index.html
 echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
-wget -O /etc/nginx/conf.d/vps.conf "https://raw.github.com/yurisshOS/debian7os/master/vps.conf"
+wget -O /etc/nginx/conf.d/vps.conf "$GITHUB/vps.conf"
 sed -i 's/listen = \/var\/run\/php5-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php5/fpm/pool.d/www.conf
 service php5-fpm restart
 service nginx restart
 
 # install openvpn
-wget -O /etc/openvpn/openvpn.tar "https://raw.github.com/yurisshOS/debian7os/master/openvpn-debian.tar"
+wget -O /etc/openvpn/openvpn.tar "$GITHUB/openvpn-debian.tar"
 cd /etc/openvpn/
 tar xf openvpn.tar
-wget -O /etc/openvpn/1194.conf "https://raw.github.com/yurisshOS/debian7os/master/1194.conf"
+wget -O /etc/openvpn/1194.conf "$GITHUB/1194.conf"
 service openvpn restart
 sysctl -w net.ipv4.ip_forward=1
 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
-wget -O /etc/iptables.up.rules "https://raw.github.com/yurisshOS/debian7os/master/iptables.up.rules"
+wget -O /etc/iptables.up.rules "$GITHUB/iptables.up.rules"
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 sed -i $MYIP2 /etc/iptables.up.rules;
 iptables-restore < /etc/iptables.up.rules
@@ -95,11 +97,11 @@ service openvpn restart
 
 # configure openvpn client config
 cd /etc/openvpn/
-wget -O /etc/openvpn/1194-client.ovpn "https://raw.github.com/yurisshOS/debian7os/master/1194-client.conf"
+wget -O /etc/openvpn/1194-client.ovpn "$GITHUB/1194-client.conf"
 sed -i $MYIP2 /etc/openvpn/1194-client.ovpn;
 PASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1`;
-useradd -M -s /bin/false YurisshOS
-echo "YurisshOS:$PASS" | chpasswd
+useradd -M -s /bin/false $USER
+echo "$USER:$PASS" | chpasswd
 echo "username" >> pass.txt
 echo "password" >> pass.txt
 tar cf client.tar 1194-client.ovpn pass.txt
@@ -107,9 +109,9 @@ cp client.tar /home/vps/public_html/
 cd
 
 # install badvpn
-wget -O /usr/bin/badvpn-udpgw "https://raw.github.com/yurisshOS/debian7os/master/badvpn-udpgw"
+wget -O /usr/bin/badvpn-udpgw "$GITHUB/badvpn-udpgw"
 if [ "$OS" == "x86_64" ]; then
-  wget -O /usr/bin/badvpn-udpgw "https://raw.github.com/yurisshOS/debian7os/master/badvpn-udpgw64"
+  wget -O /usr/bin/badvpn-udpgw "$GITHUB/badvpn-udpgw64"
 fi
 sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.local
 chmod +x /usr/bin/badvpn-udpgw
@@ -117,8 +119,8 @@ screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
 
 # install mrtg
-wget -O /etc/snmp/snmpd.conf "https://raw.github.com/yurisshOS/debian7os/master/snmpd.conf"
-wget -O /root/mrtg-mem.sh "https://raw.github.com/yurisshOS/debian7os/master/mrtg-mem.sh"
+wget -O /etc/snmp/snmpd.conf "$GITHUB/snmpd.conf"
+wget -O /root/mrtg-mem.sh "$GITHUB/mrtg-mem.sh"
 chmod +x /root/mrtg-mem.sh
 cd /etc/snmp/
 sed -i 's/TRAPDRUN=no/TRAPDRUN=yes/g' /etc/default/snmpd
@@ -126,7 +128,7 @@ service snmpd restart
 snmpwalk -v 1 -c public localhost 1.3.6.1.4.1.2021.10.1.3.1
 mkdir -p /home/vps/public_html/mrtg
 cfgmaker --zero-speed 100000000 --global 'WorkDir: /home/vps/public_html/mrtg' --output /etc/mrtg.cfg public@localhost
-curl "https://raw.github.com/yurisshOS/debian7os/master/mrtg.conf" >> /etc/mrtg.cfg
+curl "$GITHUB/mrtg.conf" >> /etc/mrtg.cfg
 sed -i 's/WorkDir: \/var\/www\/mrtg/# WorkDir: \/var\/www\/mrtg/g' /etc/mrtg.cfg
 sed -i 's/# Options\[_\]: growright, bits/Options\[_\]: growright/g' /etc/mrtg.cfg
 indexmaker --output=/home/vps/public_html/mrtg/index.html /etc/mrtg.cfg
@@ -182,7 +184,7 @@ apt-get -y install fail2ban;service fail2ban restart
 
 # install squid3
 apt-get -y install squid3
-wget -O /etc/squid3/squid.conf "https://raw.github.com/yurisshOS/debian7os/master/squid3.conf"
+wget -O /etc/squid3/squid.conf "$GITHUB/squid3.conf"
 sed -i $MYIP2 /etc/squid3/squid.conf;
 service squid3 restart
 
@@ -197,16 +199,16 @@ service vnstat restart
 
 # download script
 cd
-wget -O speedtest_cli.py "https://raw.github.com/sivel/speedtest-cli/master/speedtest_cli.py"
-wget -O bench-network.sh "https://raw.github.com/yurisshOS/debian7os/master/bench-network.sh"
-wget -O ps_mem.py "https://raw.github.com/pixelb/ps_mem/master/ps_mem.py"
-wget -O dropmon "https://raw.github.com/yurisshOS/debian7os/master/dropmon.sh"
-wget -O userlogin.sh "https://raw.github.com/yurisshOS/debian7os/master/userlogin.sh"
-wget -O userexpired.sh "https://raw.github.com/yurisshOS/debian7os/master/userexpired.sh"
-#wget -O userlimit.sh "https://raw.github.com/yurisshOS/debian7os/master/userlimit.sh"
-wget -O expire.sh "https://raw.github.com/yurisshOS/debian7os/master/expire.sh"
-#wget -O autokill.sh "https://raw.github.com/yurisshOS/debian7os/master/autokill.sh"
-wget -O /etc/issue.net "https://raw.github.com/yurisshOS/debian7os/master/banner"
+wget -O speedtest_cli.py "https://raw.github.com/sivel/speedtest-cli/master/speedtest.py"
+wget -O bench-network.sh "$GITHUB/bench-network.sh"
+wget -O ps_mem.py "$GITHUB/ps_mem.py"
+wget -O dropmon "$GITHUB/dropmon.sh"
+wget -O userlogin.sh "$GITHUB/userlogin.sh"
+wget -O userexpired.sh "$GITHUB/userexpired.sh"
+#wget -O userlimit.sh "$GITHUB/userlimit.sh"
+wget -O expire.sh "$GITHUB/expire.sh"
+#wget -O autokill.sh "$GITHUB/autokill.sh"
+wget -O /etc/issue.net "$GITHUB/banner"
 echo "@reboot root /root/userexpired.sh" > /etc/cron.d/userexpired
 #echo "@reboot root /root/userlimit.sh" > /etc/cron.d/userlimit
 echo "0 */6 * * * root /sbin/reboot" > /etc/cron.d/reboot
@@ -284,8 +286,8 @@ echo "Timezone : Asia/Jakarta"  | tee -a log-install.txt
 echo "Fail2Ban : [on]"  | tee -a log-install.txt
 echo "IPv6     : [off]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
-echo "Script Modified by Yurissh OpenSource"  | tee -a log-install.txt
-echo "Thanks to Original Creator Kang Arie & Mikodemos"
+echo "Script Modified by llbranco"  | tee -a log-install.txt
+echo "Thanks to Original Creators YurisshOS Kang Arie & Mikodemos"
 echo ""  | tee -a log-install.txt
 echo "VPS AUTO REBOOT TIAP 6 JAM"  | tee -a log-install.txt
 echo "SILAHKAN REBOOT VPS ANDA"  | tee -a log-install.txt
